@@ -1,0 +1,8 @@
+{
+  "name": "dom-hijacker-shared",
+  "version": "1.0.0",
+  "description": "Shared types for Multiplayer DOM Hijacker",
+  "main": "src/types.ts",
+  "scripts": {},
+  "license": "MIT"
+}
