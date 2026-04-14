@@ -1,0 +1,10 @@
+{
+  "name": "dom-hijacker",
+  "version": "1.0.0",
+  "description": "Root package for Fly.io deployment",
+  "private": true,
+  "scripts": {
+    "build": "cd shared && npm install && cd ../server && npm install && npm run build",
+    "start": "cd server && npm start"
+  }
+}
