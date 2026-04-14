@@ -1,32 +1,8 @@
-// Dynamically loads matter.js from CDN and applies physics to page elements
-const MATTER_JS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js';
-
-declare global {
-  interface Window {
-    Matter: typeof import('matter-js');
-  }
-}
-
-function loadScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load: ${src}`));
-    document.head.appendChild(script);
-  });
-}
+import * as Matter from 'matter-js';
 
 export async function executeGravityDrop(): Promise<void> {
-  try {
-    await loadScript(MATTER_JS_CDN);
-  } catch (err) {
-    console.error('[DOM Hijacker] 0G DROP: Failed to load matter.js — CSP may be blocking it.', err);
-    return;
-  }
 
-  const { Engine, Runner, Bodies, Composite } = window.Matter;
+  const { Engine, Runner, Bodies, Composite } = Matter;
 
   // Capture all major layout elements
   const targets = Array.from(

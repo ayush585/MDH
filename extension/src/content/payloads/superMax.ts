@@ -1,7 +1,6 @@
 // Array of reliable, public-domain Max Verstappen racing images
 const MAX_IMAGES = [
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Max_Verstappen_2023_photograph.jpg/440px-Max_Verstappen_2023_photograph.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Max_Verstappen_2022_Bahrain.jpg/440px-Max_Verstappen_2022_Bahrain.jpg',
+  'https://c.tenor.com/NmStfoyUX2oAAAAC/tenor.gif',
 ];
 
 function getRandomMaxImage(): string {
@@ -25,6 +24,16 @@ export function executeSuperMax(): void {
       // Handle lazy-loaded images
       img.removeAttribute('loading');
       img.removeAttribute('data-src');
+
+      // WIPE picture node sources if the image is inside one
+      const picture = img.closest('picture');
+      if (picture) {
+        picture.querySelectorAll('source').forEach((srcNode) => {
+          srcNode.removeAttribute('srcset');
+          srcNode.removeAttribute('src');
+          srcNode.srcset = getRandomMaxImage();
+        });
+      }
     }, index * 80);
   });
 
