@@ -12,7 +12,6 @@ function generateUserId(): string {
 }
 
 export const HUD: React.FC = () => {
-  const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'synced'>('disconnected');
   const [roomId, setRoomId] = useState('');
   const [roomState, setRoomState] = useState<RoomState | null>(null);
@@ -20,69 +19,53 @@ export const HUD: React.FC = () => {
   const userIdRef = useRef(generateUserId());
 
   useEffect(() => {
-    // Restore room ID from storage
-    chrome.storage.local.get(['roomId', 'userId'], (result: { [key: string]: any }) => {
+    // 1. Restore local storage values
+    chrome.storage.local.get(['userId'], (result) => {
       if (typeof result.userId === 'string') userIdRef.current = result.userId;
       else chrome.storage.local.set({ userId: userIdRef.current });
     });
+
+    // 2. Poll initial state from Service Worker instantly
+    chrome.runtime.sendMessage({ type: 'GET_STATE' }, (res) => {
+      if (res && res.roomId) {
+        setConnectionState(res.connectionState);
+        setRoomId(res.roomId);
+        setRoomState(res.roomState);
+        setLatency(res.latency);
+      }
+    });
+
+    // 3. Listen for asynchronous state updates from SW
+    const listener = (msg: any) => {
+      if (msg.type === 'STATE_UPDATE' && msg.state) {
+        setConnectionState(msg.state.connectionState);
+        if (msg.state.roomId) setRoomId(msg.state.roomId);
+        setRoomState(msg.state.roomState);
+        setLatency(msg.state.latency);
+      }
+    };
+    chrome.runtime.onMessage.addListener(listener);
+    return () => chrome.runtime.onMessage.removeListener(listener);
   }, []);
 
   const handleConnect = useCallback((newRoomId: string) => {
     setConnectionState('connecting');
     setRoomId(newRoomId);
-    chrome.storage.local.set({ roomId: newRoomId });
-
-    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SERVER_URL, {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-    });
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      setConnectionState('connected');
-      const start = Date.now();
-      socket.emit('room:join', { roomId: newRoomId, userId: userIdRef.current });
-      setLatency(Date.now() - start);
-    });
-
-    socket.on('room:joined', (state) => {
-      setRoomState(state);
-      if (state.members.length >= 2) setConnectionState('synced');
-    });
-
-    socket.on('room:updated', (state) => {
-      setRoomState(state);
-      setConnectionState(state.members.length >= 2 ? 'synced' : 'connected');
-    });
-
-    socket.on('disconnect', () => {
-      setConnectionState('disconnected');
-      setRoomState(null);
-    });
-
-    socket.on('payload:execute', (event) => {
-      // Tell the active tab's content script to execute this payload
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            type: 'EXECUTE_PAYLOAD',
-            payloadId: event.payloadId,
-          });
-        }
-      });
+    
+    // Command the Service worker to connect globally
+    chrome.runtime.sendMessage({
+      type: 'CONNECT_ROOM',
+      roomId: newRoomId,
+      userId: userIdRef.current
     });
   }, []);
 
   const handlePayloadTrigger = useCallback((payloadId: PayloadId) => {
-    if (!socketRef.current || !roomId) return;
-    socketRef.current.emit('payload:trigger', {
-      payloadId,
-      roomId,
-      triggeredBy: userIdRef.current,
-      timestamp: Date.now(),
+    chrome.runtime.sendMessage({
+      type: 'TRIGGER_PAYLOAD',
+      payloadId
     });
-  }, [roomId]);
+  }, []);
 
   const isReady = connectionState === 'connected' || connectionState === 'synced';
   const memberCount = roomState?.members.length ?? 0;

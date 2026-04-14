@@ -4,12 +4,13 @@
 export interface ContentMessage {
   type: 'EXECUTE_PAYLOAD';
   payloadId: string;
+  data?: any;
 }
 
-export function initMessageBridge(onPayload: (payloadId: string) => void): void {
+export function initMessageBridge(onPayload: (payloadId: string, data?: any) => void): void {
   chrome.runtime.onMessage.addListener((message: ContentMessage) => {
     if (message.type === 'EXECUTE_PAYLOAD') {
-      onPayload(message.payloadId);
+      onPayload(message.payloadId, message.data);
     }
   });
 }

@@ -18,7 +18,7 @@ function scrambleText(original: string, progress: number): string {
     .join('');
 }
 
-export function executeCipherText(): void {
+export function executeCipherText(data?: any): void {
   const selectors = 'p, h1, h2, h3, h4, h5, h6, li, td, th, span, label, a';
   const elements = Array.from(document.querySelectorAll<HTMLElement>(selectors));
 

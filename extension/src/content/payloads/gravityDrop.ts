@@ -1,6 +1,6 @@
 import * as Matter from 'matter-js';
 
-export async function executeGravityDrop(): Promise<void> {
+export async function executeGravityDrop(data?: any): Promise<void> {
 
   const { Engine, Runner, Bodies, Composite } = Matter;
 
@@ -11,7 +11,8 @@ export async function executeGravityDrop(): Promise<void> {
     )
   ).filter((el) => {
     const rect = el.getBoundingClientRect();
-    return rect.width > 20 && rect.height > 20 && rect.top > -100;
+    const isTooBig = rect.width > window.innerWidth * 0.8 || rect.height > window.innerHeight * 0.8;
+    return rect.width > 20 && rect.height > 20 && rect.top > -100 && !isTooBig;
   }).slice(0, 40); // Limit to 40 elements for performance
 
   const engine = Engine.create({ gravity: { y: 1.5 } });

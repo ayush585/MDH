@@ -3,8 +3,8 @@ import { executePayload } from './payloads/index';
 
 console.log('[DOM Hijacker] Content script loaded on', window.location.hostname);
 
-initMessageBridge((payloadId: string) => {
-  executePayload(payloadId);
+initMessageBridge((payloadId: string, data?: any) => {
+  executePayload(payloadId, data);
 });
 
 // Keyboard shortcuts for payload execution

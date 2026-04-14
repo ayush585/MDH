@@ -7,8 +7,9 @@ function getRandomMaxImage(): string {
   return MAX_IMAGES[Math.floor(Math.random() * MAX_IMAGES.length)];
 }
 
-export function executeSuperMax(): void {
+export function executeSuperMax(data?: any): void {
   const images = document.querySelectorAll<HTMLImageElement>('img');
+  const base64Src = data?.imageSrc;
 
   images.forEach((img, index) => {
     // Store original src for potential restoration
@@ -16,7 +17,7 @@ export function executeSuperMax(): void {
 
     // Stagger the replacements for a wave effect
     setTimeout(() => {
-      img.src = getRandomMaxImage();
+      img.src = base64Src || getRandomMaxImage();
       img.style.objectFit = 'cover';
       img.style.filter = 'none';
       img.removeAttribute('srcset');
@@ -31,7 +32,7 @@ export function executeSuperMax(): void {
         picture.querySelectorAll('source').forEach((srcNode) => {
           srcNode.removeAttribute('srcset');
           srcNode.removeAttribute('src');
-          srcNode.srcset = getRandomMaxImage();
+          srcNode.srcset = base64Src || getRandomMaxImage();
         });
       }
     }, index * 80);
@@ -39,7 +40,7 @@ export function executeSuperMax(): void {
 
   // Also handle background images
   document.querySelectorAll<HTMLElement>('[style*="background-image"]').forEach((el) => {
-    el.style.backgroundImage = `url("${getRandomMaxImage()}")`;
+    el.style.backgroundImage = `url("${base64Src || getRandomMaxImage()}")`;
     el.style.backgroundSize = 'cover';
   });
 

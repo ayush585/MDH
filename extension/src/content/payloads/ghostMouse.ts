@@ -38,7 +38,7 @@ function createGhostCursor(): HTMLElement {
   return cursor;
 }
 
-export function initGhostMouse(): void {
+export function initGhostMouse(data?: any): void {
   if (isTracking) return;
   isTracking = true;
 
