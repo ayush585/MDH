@@ -58,6 +58,12 @@ function connectSocket(roomId: string, userId: string) {
     broadcastState();
   });
 
+  socket.on('connect_error', (err: any) => {
+    console.error('[DOM Hijacker] Socket connection error:', err);
+    connectionState = 'disconnected';
+    broadcastState();
+  });
+
   socket.on('room:joined', (state) => {
     currentRoomState = state;
     if (state.members.length >= 2) connectionState = 'synced';

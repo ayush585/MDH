@@ -27,9 +27,9 @@ export const HUD: React.FC = () => {
 
     // 2. Poll initial state from Service Worker instantly
     chrome.runtime.sendMessage({ type: 'GET_STATE' }, (res) => {
-      if (res && res.roomId) {
+      if (res) {
         setConnectionState(res.connectionState);
-        setRoomId(res.roomId);
+        if (res.roomId) setRoomId(res.roomId);
         setRoomState(res.roomState);
         setLatency(res.latency);
       }
